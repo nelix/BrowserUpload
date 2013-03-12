@@ -11,6 +11,7 @@
 // GO AFTER THE REQUIRES BELOW.
 //
 //= require jquery
+//= require jquery.iframe.transport
 //= require jquery_ujs
 //= require turbolinks
 //= require_tree .

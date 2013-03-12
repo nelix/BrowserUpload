@@ -2,7 +2,7 @@ class UploadsController < ApplicationController
   require 'base64'
   require 'openssl'
   require 'digest/sha1'
-  
+
   before_action :set_upload, only: [:show, :edit, :update, :destroy]
   skip_before_filter :verify_authenticity_token
 
@@ -88,6 +88,7 @@ class UploadsController < ApplicationController
           { "bucket" =>  bucket },
           ["starts-with", "$key", secret],
           { "acl" => "public-read" },
+          {"redirect"=> uploads_url },
           ["content-length-range", 0, 20485760]
         ]
       }

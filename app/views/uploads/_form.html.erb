@@ -16,34 +16,38 @@
   $(document).ready( function() {
     var form = $('#fileUpload'),
         progress = $('#progress'),
-        data = new FormData();
+        data = {};
 
     form.submit(function(event) {
       event.preventDefault();
 
-      var file = $('#file')[0];
-      progress.text('Starting to upload file:' + file.files[0].name);
-      data.append('key', '<%= @key %>/' + file.files[0].name);
-      data.append('AWSAccessKeyId', '<%= @id %>');
-      data.append('acl', 'public-read');
-      data.append('policy', '<%= @policy %>');
-      data.append('signature','<%= @signature %>');
+      var file = $('#file');
+      var fileName = file.val().replace(/C:\\fakepath\\/i, ''); // IE is yuk
 
-      data.append('file', file.files[0]);
-
-      console.log('submit', data);
+      console.log(JSON.stringify(fileName));
+      progress.text('Starting to upload file:' + fileName);
+      data = { 'key': '<%= @key %>/${filename}',
+               'AWSAccessKeyId': '<%= @id %>',
+               'acl': 'public-read',
+               'redirect': '<%= @callback %>',
+               'policy': '<%= @policy %>',
+               'signature': '<%= @signature %>'
+             };
 
       $.ajax( {
-        processData: false,
+        dataType: 'iframe',
+        iframe: true,
+        fileInput: file,
+        processData: true,
         contentType: false,
         type: 'POST',
         url: '<%= AWS_HOST %>',
-        data: data,
+        formData: data,
         xhrFields: {
           withCredentials: true
         },
-        dataType: 'xml',
-        success: function(response) {
+
+        complete: function(response) {
           progress.css('width', '0%');
           progress.text('File upload done. Sending callback.');
           console.log(response);
@@ -51,28 +55,13 @@
             type: 'POST',
             url: '<%= @callback %>',
             dataType: 'json',
-            data: {upload: {filename: file.files[0].name, key: '<%= @key %>'}},
+            data: {upload: {filename: fileName, key: '<%= @key %>'}},
             success: function(response) {
               progress.text('Finished.');
               console.log(response);
               form.hide();
             }
           });
-        },
-        xhr: function() {
-          // Patch in some progress
-          var xhr = $.ajaxSettings.xhr();
-          if(xhr.upload){
-            xhr.upload.addEventListener('progress', function(event) {
-              if (event.lengthComputable) {
-                var percentComplete = parseInt(event.loaded / event.total * 100, 10);
-                console.log(percentComplete)
-                progress.text('File upload ' + percentComplete + '%');
-                progress.css('width', percentComplete + '%');
-              }
-            }, false);
-          }
-          return xhr;
         }
       });
     });
