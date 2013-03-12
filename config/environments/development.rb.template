@@ -3,7 +3,7 @@ raise "edit development.rb"
 #AWS_BUCKET = 'bucketexample'
 #AWS_SECRET_ACCESS_KEY = "FILL ME"
 #AWS_HOST = "https://bucketexample.s3.amazonaws.com/"
-#AWS_ID = "AKIAJFZXPZFLDR3HB4NQ"
+#AWS_ID = "With what ned?"
 
 BrowserUpload::Application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
