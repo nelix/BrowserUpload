@@ -2,6 +2,7 @@ class UploadsController < ApplicationController
   require 'base64'
   require 'openssl'
   require 'digest/sha1'
+  
   before_action :set_upload, only: [:show, :edit, :update, :destroy]
   skip_before_filter :verify_authenticity_token
 
@@ -81,22 +82,25 @@ class UploadsController < ApplicationController
     end
 
     def s3_policy(secret, bucket)
-      policy = {"expiration" => 20.minutes.from_now.utc.xmlschema,  # Why not?
-            "conditions" =>  [ 
-              {"bucket" =>  bucket},                                # Pulled from config/enviroment/$ENV.rb
-              ["starts-with", "$key", secret],
-              {"acl" => "public-read"},
-              ["content-length-range", 0, 20485760]                 # Sure why not
-            ]
-          }
-      Base64.encode64(policy.to_json).gsub(/\n/,'')
+      policy = {
+        "expiration" => 20.minutes.from_now.utc.xmlschema,
+        "conditions" =>  [ 
+          { "bucket" =>  bucket },
+          ["starts-with", "$key", secret],
+          { "acl" => "public-read" },
+          ["content-length-range", 0, 20485760]
+        ]
+      }
+      Base64.encode64(policy.to_json).gsub(/\n/, '')
     end
 
-    def s3_sign_policy(policy_document, aws_secret_key)             # Thanks Amazon docs
+    def s3_sign_policy(policy_document, aws_secret_key)
       Base64.encode64(
         OpenSSL::HMAC.digest(
           OpenSSL::Digest::Digest.new('sha1'),
-          aws_secret_key, policy_document)
-        ).gsub("\n","")
+          aws_secret_key,
+          policy_document
+        )
+      ).gsub("\n", "")
     end
 end
