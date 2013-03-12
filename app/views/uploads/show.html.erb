@@ -1,0 +1,18 @@
+<p id="notice"><%= notice %></p>
+
+<p>
+  <strong>Filename:</strong>
+  <%= @upload.filename %>
+</p>
+
+</p>
+   <strong>Key:</strong>
+  <%= @upload.key %>
+</p>
+
+<p>
+  <strong>Url:</strong>
+  <a href='<%= @upload.url %>'><%= @upload.url %></a>
+</p>
+
+<%= link_to 'Back', uploads_path %>

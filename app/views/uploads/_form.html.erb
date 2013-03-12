@@ -1,0 +1,80 @@
+<!-- would not be hard to make less ugly templates than this. -->
+<form id= "fileUpload">
+
+
+  File to upload to S3: 
+  <input id="file" name="file" type="file"> 
+  <br> 
+  <input type="submit" value="Upload"> 
+</form>
+
+<div style="height:24px; width:100; padding: 3px;">
+  <div id="progress" style="background:#718894; width:0%; height:100%; -webkit-border-radius: 3px 3px;"></div>
+</div>
+
+<script type="text/javascript">
+  $(document).ready( function() {
+    var form = $('#fileUpload'),
+        progress = $('#progress'),
+        data = new FormData();
+
+    form.submit(function(event) {
+      event.preventDefault();
+
+      var file = $('#file')[0];
+      progress.text('Starting to upload file:' + file.files[0].name);
+      data.append('key', '<%= @key %>/' + file.files[0].name);
+      data.append('AWSAccessKeyId', '<%= @id %>');
+      data.append('acl', 'public-read');
+      data.append('policy', '<%= @policy %>');
+      data.append('signature','<%= @signature %>');
+
+      data.append('file', file.files[0]);
+
+      console.log('submit', data);
+
+      $.ajax( {
+        processData: false,
+        contentType: false,
+        type: 'POST',
+        url: '<%= AWS_HOST %>',
+        data: data,
+        xhrFields: {
+          withCredentials: true
+        },
+        dataType: 'xml',
+        success: function(response) {
+          progress.css('width', '0%');
+          progress.text('File upload done. Sending callback.');
+          console.log(response);
+          $.ajax( {
+            type: 'POST',
+            url: '<%= @callback %>',
+            dataType: 'json',
+            data: {upload: {filename: file.files[0].name, key: '<%= @key %>'}},
+            success: function(response) {
+              progress.text('Finished.');
+              console.log(response);
+              form.hide();
+            }
+          });
+        },
+        xhr: function() {
+          // Patch in some progress
+          var xhr = $.ajaxSettings.xhr();
+          if(xhr.upload){
+            xhr.upload.addEventListener('progress', function(event) {
+              if (event.lengthComputable) {
+                var percentComplete = parseInt(event.loaded / event.total * 100, 10);
+                console.log(percentComplete)
+                progress.text('File upload ' + percentComplete + '%');
+                progress.css('width', percentComplete + '%');
+              }
+            }, false);
+          }
+          return xhr;
+        }
+      });
+    });
+  });
+</script>

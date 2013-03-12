@@ -1,0 +1,30 @@
+<h1>Listing uploads</h1>
+
+<table>
+  <thead>
+    <tr>
+      <th>Filename</th>
+      <th>Url</th>
+      <th>Key</th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <% @uploads.each do |upload| %>
+    <tr>
+      <td><%= upload.filename %></td>
+      <td><a href='<%= upload.url %>'><%= upload.url %></a></td>
+      <td><%= upload.key %></td>
+      <td><%= link_to 'Show', upload %></td>
+      <td><%= link_to 'Destroy', upload, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+    </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<br />
+
+<%= link_to 'New Upload', new_upload_path %>
